@@ -2,23 +2,23 @@ Library = {}
 SaveTheme = {}
 
 local themes = {
-	index = {'Dark', 'Amethyst'},
-	Amethyst = {
-		['Shadow'] = Color3.fromRGB(24, 24, 31),
+	index = {'Default', 'Dark'},
+	Default = {
+		['Shadow'] = Color3.fromRGB(0, 49, 255),
 		['Background'] = Color3.fromRGB(29, 28, 38),
 		['Page'] = Color3.fromRGB(24, 24, 31),
-		['Main'] = Color3.fromRGB(91, 68, 209),
+		['Main'] = Color3.fromRGB(108, 30, 210),
 		['Text & Icon'] = Color3.fromRGB(255, 255, 255),
 		['Function'] = {
 			['Toggle'] = {
 				['Background'] = Color3.fromRGB(29, 28, 38),
 				['True'] = {
-					['Toggle Background'] = Color3.fromRGB(44, 34, 103),
-					['Toggle Value'] = Color3.fromRGB(91, 68, 209),
+					['Toggle Background'] = Color3.fromRGB(36, 35, 48),
+					['Toggle Value'] = Color3.fromRGB(24, 19, 142),
 				},
 				['False'] = {
 					['Toggle Background'] = Color3.fromRGB(36, 35, 48),
-					['Toggle Value'] = Color3.fromRGB(44, 42, 62),
+					['Toggle Value'] = Color3.fromRGB(108, 30, 210),
 				}
 			},
 			['Label'] = {
@@ -38,8 +38,8 @@ local themes = {
 				['Background'] = Color3.fromRGB(29, 28, 38),
 				['Value Background'] = Color3.fromRGB(24, 24, 31),
 				['Value Stroke'] = Color3.fromRGB(255, 255, 255),
-				['Slider Bar'] = Color3.fromRGB(44, 34, 103),
-				['Slider Bar Value'] = Color3.fromRGB(91, 68, 209),
+				['Slider Bar'] = Color3.fromRGB(24, 19, 142),
+				['Slider Bar Value'] = Color3.fromRGB(108, 30, 210),
 				['Circle Value'] = Color3.fromRGB(255, 255, 255)
 			},
 			['Code'] = {
@@ -62,8 +62,8 @@ local themes = {
 				['Value Background'] = Color3.fromRGB(24, 24, 31),
 				['Value Stroke'] = Color3.fromRGB(255, 255, 255),
 				['True'] = {
-					['Toggle Background'] = Color3.fromRGB(44, 34, 103),
-					['Toggle Value'] = Color3.fromRGB(91, 68, 209),
+					['Toggle Background'] = Color3.fromRGB(24, 19, 142),
+					['Toggle Value'] = Color3.fromRGB(108, 30, 210),
 				},
 				['False'] = {
 					['Toggle Background'] = Color3.fromRGB(36, 35, 48),
@@ -157,13 +157,13 @@ local themes = {
 	},
 }
 
-local existingUI = game:GetService("CoreGui"):FindFirstChild("ADS")
+local existingUI = game:GetService("CoreGui"):FindFirstChild("Aether")
 if existingUI then
 	existingUI:Destroy()
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ADS"
+ScreenGui.Name = "Aether"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.DisplayOrder = 999
@@ -742,7 +742,7 @@ do
 		ScrollingFrame_1.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
 		ScrollingFrame_1.HorizontalScrollBarInset = Enum.ScrollBarInset.None
 		ScrollingFrame_1.MidImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-		ScrollingFrame_1.ScrollBarImageColor3 = Color3.fromRGB(107,84,255)
+		ScrollingFrame_1.ScrollBarImageColor3 = Color3.fromRGB(110,195,254)
 		ScrollingFrame_1.ScrollBarImageTransparency = 0
 		ScrollingFrame_1.ScrollBarThickness = 2
 		ScrollingFrame_1.ScrollingDirection = Enum.ScrollingDirection.XY
@@ -1094,7 +1094,7 @@ function Library:Window(p)
 	local Title = p.Title or 'null'
 	local Desc = p.Desc or ''
 	local Icon = p.Icon or 'door-open'
-	local Theme = p.Theme or 'Dark'
+	local Theme = p.Theme or 'Default'
 	local Keybind = p.Config.Keybind or Enum.KeyCode.LeftControl
 	local Size = p.Config.Size or UDim2.new(0, 530,0, 400)
 	local DiscordLink = p.DiscordLink or nil
@@ -1114,17 +1114,22 @@ function Library:Window(p)
 	local UIPadding_2 = Instance.new("UIPadding")
 
 	Shadow_1.Name = "Shadow"
+	Shadow_1.Image = "rbxassetid://1316045217"
+	Shadow_1.ImageColor3 = Color3.fromRGB(0, 49, 255)
+	Shadow_1.ScaleType = Enum.ScaleType.Slice
+	Shadow_1.SliceCenter = Rect.new(5, 5, 125, 125)
+	Shadow_1.ImageTransparency = 0.5
 	Shadow_1.Parent = ScreenGui
 	Shadow_1.AnchorPoint = Vector2.new(0.5, 0.5)
-	Shadow_1.BackgroundColor3 = Color3.fromRGB(163,162,165)
+	Shadow_1.BackgroundColor3 = Color3.fromRGB(24, 24, 31)
 	Shadow_1.BackgroundTransparency = 1
 	Shadow_1.Position = UDim2.new(0.5, 0,0.5, 0)
 	Shadow_1.Size = Size
-	Shadow_1.ImageColor3 = Color3.fromRGB(24, 24, 31)
-	Shadow_1.ImageTransparency = 0.8
-	Shadow_1.ScaleType = Enum.ScaleType.Slice
-	Shadow_1.SliceCenter = Rect.new(10, 10, 118, 118)
 	Shadow_1.Visible = false
+
+	local ShadowCorner = Instance.new("UICorner")
+	ShadowCorner.CornerRadius = UDim.new(0, 18)
+	ShadowCorner.Parent = Shadow_1
 
 	addToTheme('Shadow', Shadow_1)
 
@@ -1181,6 +1186,177 @@ function Library:Window(p)
 	UIPadding_2.PaddingRight = UDim.new(0,5)
 	UIPadding_2.PaddingTop = UDim.new(0,45)
 
+	local Footer = Instance.new("Frame")
+	local FooterText = Instance.new("TextLabel")
+
+	Footer.Name = "Footer"
+	Footer.Parent = Background_1
+	Footer.AnchorPoint = Vector2.new(0, 1)
+	Footer.BackgroundColor3 = Color3.fromRGB(29,28,38)
+	Footer.BackgroundTransparency = 1
+	Footer.BorderSizePixel = 0
+	Footer.Position = UDim2.new(0, 0,1, 0)
+	Footer.Size = UDim2.new(1, 0,0, 24)
+
+	local name = "Unknown Game"
+
+	local MarketplaceService = game:GetService("MarketplaceService")
+
+	local success, result = pcall(function()
+		return MarketplaceService:GetProductInfo(game.PlaceId)
+	end)
+
+	FooterText.Name = "FooterText"
+	FooterText.Parent = Footer
+	FooterText.BackgroundTransparency = 1
+	FooterText.Size = UDim2.new(1, 0,1, 0)
+	FooterText.Font = Enum.Font.Gotham
+	FooterText.TextSize = 12
+
+	if success and result then
+		name = result.Name
+	end
+
+	FooterText.Text = "discord.gg/aetherhub | " .. name
+	FooterText.TextColor3 = Color3.fromRGB(255,255,255)
+	FooterText.TextXAlignment = Enum.TextXAlignment.Center
+	FooterText.TextYAlignment = Enum.TextYAlignment.Center
+
+	addToTheme('Page', Footer)
+	addToTheme('Text & Icon', FooterText)
+
+	local AccountInfo = Instance.new("Frame")
+	local AvatarFrame = Instance.new("Frame")
+	local AvatarImage = Instance.new("ImageLabel")
+	local InfoFrame = Instance.new("Frame")
+	local UsernameLabel = Instance.new("TextLabel")
+	local TypeLabel = Instance.new("TextLabel")
+	local ExpiryLabel = Instance.new("TextLabel")
+
+	AccountInfo.Name = "AccountInfo"
+	AccountInfo.Parent = Background_1
+	AccountInfo.BackgroundTransparency = 1
+	AccountInfo.BorderSizePixel = 0
+	AccountInfo.AnchorPoint = Vector2.new(0, 1)
+	AccountInfo.Position = UDim2.new(0, 16, 1, -11)
+	AccountInfo.Size = UDim2.new(0, 150, 0, 66)
+
+	AvatarFrame.Name = "AvatarFrame"
+	AvatarFrame.Parent = AccountInfo
+	AvatarFrame.BackgroundColor3 = Color3.fromRGB(24,24,31)
+	AvatarFrame.BorderSizePixel = 0
+	AvatarFrame.AnchorPoint = Vector2.new(0, 0.5)
+	AvatarFrame.Position = UDim2.new(0, 0, 0.5, 0)
+	AvatarFrame.Size = UDim2.new(0, 40, 0, 40)
+
+	local AvatarCorner = Instance.new("UICorner")
+	AvatarCorner.CornerRadius = UDim.new(1, 0)
+	AvatarCorner.Parent = AvatarFrame
+
+	AvatarImage.Name = "AvatarImage"
+	AvatarImage.Parent = AvatarFrame
+	AvatarImage.BackgroundTransparency = 1
+	AvatarImage.Size = UDim2.new(1, 0, 1, 0)
+	AvatarImage.Position = UDim2.new(0, 0, 0, 0)
+
+	pcall(function()
+		local pl = game.Players.LocalPlayer
+		if pl then
+			AvatarImage.Image = "rbxthumb://type=AvatarHeadShot&id="..pl.UserId.."&w=48&h=48"
+		end
+	end)
+
+	InfoFrame.Name = "Info"
+	InfoFrame.Parent = AccountInfo
+	InfoFrame.BackgroundTransparency = 1
+	InfoFrame.AnchorPoint = Vector2.new(0, 0.5)
+	InfoFrame.Position = UDim2.new(0, 48, 0.5, 0)
+	InfoFrame.Size = UDim2.new(1, -52, 1, 0)
+
+	UsernameLabel.Name = "Username"
+	UsernameLabel.Parent = InfoFrame
+	UsernameLabel.BackgroundTransparency = 1
+	UsernameLabel.Position = UDim2.new(0, 0, 0, 0)
+	UsernameLabel.Size = UDim2.new(1, 0, 0, 18)
+	UsernameLabel.Font = Enum.Font.GothamBold
+	UsernameLabel.TextSize = 14
+	UsernameLabel.TextScaled = true
+	UsernameLabel.Text = (game.Players.LocalPlayer and (game.Players.LocalPlayer.Name) or "Player")
+	UsernameLabel.TextColor3 = Color3.fromRGB(255,255,255)
+	UsernameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	UsernameLabel.TextWrapped = true
+
+	TypeLabel.Name = "Type"
+	TypeLabel.Parent = InfoFrame
+	TypeLabel.BackgroundTransparency = 1
+	TypeLabel.Position = UDim2.new(0, 0, 0, 18)
+	TypeLabel.Size = UDim2.new(1, 0, 0, 12)
+	TypeLabel.Font = Enum.Font.Gotham
+	TypeLabel.TextSize = 12
+	TypeLabel.Text = "Type: " .. ( (type(JD_IS_PREMIUM) ~= 'nil' and JD_IS_PREMIUM) and "Premium" or "Free" )
+	TypeLabel.TextColor3 = Color3.fromRGB(200,200,200)
+	TypeLabel.TextXAlignment = Enum.TextXAlignment.Left
+	TypeLabel.TextWrapped = true
+
+	ExpiryLabel.Name = "Expiry"
+	ExpiryLabel.Parent = InfoFrame
+	ExpiryLabel.BackgroundTransparency = 1
+	ExpiryLabel.Position = UDim2.new(0, 0, 0, 33)
+	ExpiryLabel.Size = UDim2.new(1, 0, 0, 30)
+	ExpiryLabel.Font = Enum.Font.Gotham
+	ExpiryLabel.TextSize = 12
+	ExpiryLabel.Text = "Key expires: --"
+	ExpiryLabel.TextColor3 = Color3.fromRGB(200,200,200)
+	ExpiryLabel.TextXAlignment = Enum.TextXAlignment.Left
+	ExpiryLabel.TextWrapped = true
+	ExpiryLabel.TextYAlignment = Enum.TextYAlignment.Top
+
+	addToTheme('Main', AvatarFrame)
+	addToTheme('Text & Icon', UsernameLabel)
+	addToTheme('Text & Icon', TypeLabel)
+	addToTheme('Text & Icon', ExpiryLabel)
+
+	local function formatDuration(sec)
+		if not sec or sec <= 0 then return "Expired" end
+		local days = math.floor(sec / 86400)
+		sec = sec - days * 86400
+		local hours = math.floor(sec / 3600)
+		sec = sec - hours * 3600
+		local mins = math.floor(sec / 60)
+		local secs = math.floor(sec - mins * 60)
+		if days > 0 then
+			return string.format("%dd %dh", days, hours)
+		elseif hours > 0 then
+			return string.format("%dh %dm", hours, mins)
+		elseif mins > 0 then
+			return string.format("%dm %ds", mins, secs)
+		else
+			return string.format("%ds", secs)
+		end
+	end
+
+	task.spawn(function()
+		while task.wait(1) do
+			local ok, expires = pcall(function() return JD_EXPIRES_AT end)
+			local ok2, isPremium = pcall(function() return JD_IS_PREMIUM end)
+			local remaining = nil
+			if ok and type(expires) == 'number' then
+				remaining = expires - os.time()
+			end
+			if remaining and remaining > 0 then
+				ExpiryLabel.Text = "Key expires in: " .. formatDuration(remaining)
+			else
+				ExpiryLabel.Text = "Key expires in: --"
+			end
+
+			if ok2 then
+				TypeLabel.Text = "Type: " .. (isPremium and "Premium" or "Free")
+			else
+				TypeLabel.Text = "Type: Unknown"
+			end
+		end
+	end)
+
 	local Topbar_1 = Instance.new("Frame")
 	local Frame_5 = Instance.new("Frame")
 	local Ct_1 = Instance.new("Frame")
@@ -1224,7 +1400,7 @@ function Library:Window(p)
 	SidebarTopLine.BorderColor3 = Color3.fromRGB(0,0,0)
 	SidebarTopLine.BorderSizePixel = 0
 	SidebarTopLine.Position = UDim2.new(0, 0,0, 42)
-	SidebarTopLine.Size = UDim2.new(0, 110,0, 1)
+	SidebarTopLine.Size = UDim2.new(0, 170,0, 1)
 	SidebarTopLine.ZIndex = 5
 
 	addToTheme('Page', SidebarTopLine)
@@ -1441,7 +1617,7 @@ function Library:Window(p)
 	Title_1.BorderColor3 = Color3.fromRGB(0,0,0)
 	Title_1.BorderSizePixel = 0
 	Title_1.LayoutOrder = 1
-	Title_1.Size = UDim2.new(0, 100,1, 0)
+	Title_1.Size = UDim2.new(0, 60,1, 0)
 
 	Desc_1.Name = "Desc"
 	Desc_1.Parent = Title_1
@@ -1586,7 +1762,7 @@ function Library:Window(p)
 	SidebarVerticalLine.BackgroundColor3 = Color3.fromRGB(24,24,31)
 	SidebarVerticalLine.BorderColor3 = Color3.fromRGB(0,0,0)
 	SidebarVerticalLine.BorderSizePixel = 0
-	SidebarVerticalLine.Position = UDim2.new(0, 110,0, 42)
+	SidebarVerticalLine.Position = UDim2.new(0, 170,0, 42)
 	SidebarVerticalLine.Size = UDim2.new(0, 1,1, -42)
 	SidebarVerticalLine.ZIndex = 5
 
@@ -1715,8 +1891,8 @@ function Library:Window(p)
 		InPage_1.BackgroundColor3 = Color3.fromRGB(24,24,31)
 		InPage_1.BorderColor3 = Color3.fromRGB(0,0,0)
 		InPage_1.BorderSizePixel = 0
-		InPage_1.Size = UDim2.new(1, 0,1, 0)
-		InPage_1.Position = UDim2.new(0.5, 0, 0.5, 0)
+		InPage_1.Size = UDim2.new(0.9, 0,1, 0)
+		InPage_1.Position = UDim2.new(0.55, 0, 0.5, 0)
 		InPage_1.Visible = false
 
 		addToTheme('Page', InPage_1)
@@ -4706,21 +4882,20 @@ function Library:Window(p)
 	end
 
 	do
-		local Size_1 = Instance.new("TextButton")
+		local Size_1 = Instance.new("ImageButton")
 
-		Size_1.Name = "Size"
+		Size_1.Name = "BottomSize"
 		Size_1.Parent = Background_1
 		Size_1.Active = true
+		Size_1.Image = "rbxassetid://13857987062"
+		Size_1.Rotation = 90
 		Size_1.AnchorPoint = Vector2.new(1, 1)
 		Size_1.BackgroundColor3 = Color3.fromRGB(255,255,255)
 		Size_1.BackgroundTransparency = 1
 		Size_1.BorderColor3 = Color3.fromRGB(0,0,0)
 		Size_1.BorderSizePixel = 0
-		Size_1.Position = UDim2.new(1, 0,1, 0)
+		Size_1.Position = UDim2.new(0.99, 0,0.99, 0)
 		Size_1.Size = UDim2.new(0, 20,0, 20)
-		Size_1.Font = Enum.Font.SourceSans
-		Size_1.Text = ""
-		Size_1.TextSize = 14
 
 		local SizeFrame = Instance.new("Frame")
 		local ImageLabel_1 = Instance.new("ImageLabel")
@@ -4921,7 +5096,7 @@ function Library:Window(p)
 			if not firsttime then
 				firsttime = true
 				Tabs:Notify({
-					Title = 'ADS',
+					Title = 'Aether',
 					Desc = 'Press the <font color="#FF77A5" size="14">('..tostring(Keybind):gsub("Enum.KeyCode.", "")..')</font> button to hide and show the UI',
 					Time = 10
 				})
@@ -5059,7 +5234,6 @@ function Library:Window(p)
 			end
 			
 			Background_1.BackgroundTransparency = 0
-			Shadow_1.ImageTransparency = 0.8
 			
 			if Page_1 then
 				Page_1.BackgroundTransparency = 1
@@ -5096,7 +5270,7 @@ function Library:Window(p)
 				end
 				Tabs:Notify({
 					Title = "Discord",
-					Desc = "copied please join :D",
+					Desc = "The discord link has been copied to your clipboard, join to get updates and support!",
 					Time = 3,
 					Type = "normal"
 				})
@@ -5189,7 +5363,7 @@ function Library:Window(p)
 		CloseUIImage.BorderSizePixel = 0
 		CloseUIImage.Position = UDim2.new(0.5, 0,0.5, 0)
 		CloseUIImage.Size = UDim2.new(0, 50,0, 50)
-		CloseUIImage.Image = "rbxassetid://100189470230468"
+		CloseUIImage.Image = "rbxassetid://99432006374500"
 		CloseUIImage.ImageTransparency = 0
 
 		addToTheme('Text & Icon', CloseUIImage)
