@@ -274,7 +274,6 @@ TDS = {
     PlacedTowers = {},
     ActiveStrat = true,
     MatchmakingMap = {
-        ["Hardcore"] = "hardcore",
         ["PizzaParty"] = "halloween",
         ["Badlands"] = "badlands",
         ["PollutedWasteland"] = "polluted",
@@ -2607,6 +2606,13 @@ local function RejoinMatch()
                 elseif CurrentMode == "Hardcore" then
                     payload = {
                         mode = "hardcore",
+                        difficulty = "Easy",
+                        count = 1
+                    }
+                elseif CurrentMode == "Voidcore" then
+                    payload = {
+                        mode = "hardcore",
+                        difficulty = "Hard",
                         count = 1
                     }
                 elseif CurrentMode == "PollutedWasteland" then
@@ -3270,7 +3276,19 @@ function TDS:Mode(difficulty, code)
                 local mode = TDS.MatchmakingMap[difficulty]
                 local payload
 
-                if mode then
+                if difficulty == "Hardcore" then
+                    payload = {
+                        mode = "hardcore",
+                        difficulty = "Easy",
+                        count = 1
+                    }
+                elseif difficulty == "Voidcore" then
+                    payload = {
+                        mode = "hardcore",
+                        difficulty = "Hard",
+                        count = 1
+                    }
+                elseif mode then
                     payload = {
                         mode = mode,
                         count = 1
