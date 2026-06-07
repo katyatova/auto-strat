@@ -3190,7 +3190,16 @@ end
 function TDS:Mode(difficulty, code)
     local targetCode = ""
 
-    if not IsMobile then
+    if IsMobile then
+        if (code and code ~= "") or (Globals.PrivateCode and Globals.PrivateCode ~= "") then
+            Window:Notify({
+                Title = "Warning",
+                Desc = "Private server codes are not supported on mobile devices.",
+                Time = 25,
+                Type = "error"
+            })
+        end
+    else
         if code and code ~= "" then
             targetCode = code
         elseif Globals.PrivateCode then
