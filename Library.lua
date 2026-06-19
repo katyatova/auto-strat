@@ -1269,7 +1269,7 @@ local Automation = Window:Tab({Title = "Automation", Icon = "bot"}) do
 
     Automation:Textbox({
         Title = "DJ Custom Music",
-        Desc = "Custom audio ID for your DJ Booth",
+        Desc = "Custom audio ID for your DJ Booth (Requires Gamepass)",
         Placeholder = "Audio ID",
         Value = Globals.DJCustomSongID or "",
         ClearTextOnFocus = false,
