@@ -664,46 +664,6 @@ return function(ctx)
             Size = UDim2.new(0, 330, 0, 230)
         })
 
-        if has_hook then
-            Globals.__tds_recorder_handler = function(remote, method, args, results)
-                handle_namecall(remote, method, args, results)
-            end
-
-            if not Globals.__tds_recorder_hooked then
-                Globals.__tds_recorder_hooked = true
-                
-                local originalFire
-                originalFire = hookfunction(Instance.new("RemoteEvent").FireServer, function(self, ...)
-                    local args = {...}
-                    local results = table.pack(originalFire(self, ...))
-                    local handler = Globals.__tds_recorder_handler
-                    if handler then
-                        task.spawn(function()
-                            local set_id = setthreadidentity or setidentity or setthreadcontext
-                            if set_id then set_id(7) end
-                            pcall(handler, self, "FireServer", args, results)
-                        end)
-                    end
-                    return table.unpack(results, 1, results.n)
-                end)
-
-                local originalInvoke
-                originalInvoke = hookfunction(Instance.new("RemoteFunction").InvokeServer, function(self, ...)
-                    local args = {...}
-                    local results = table.pack(originalInvoke(self, ...))
-                    local handler = Globals.__tds_recorder_handler
-                    if handler then
-                        task.spawn(function()
-                            local set_id = setthreadidentity or setidentity or setthreadcontext
-                            if set_id then set_id(7) end
-                            pcall(handler, self, "InvokeServer", args, results)
-                        end)
-                    end
-                    return table.unpack(results, 1, results.n)
-                end)
-            end
-        end
-
         RecorderTab:Button({
             Title = "START",
             Desc = "",
@@ -713,6 +673,30 @@ return function(ctx)
                 if not has_hook then
                     Recorder:Log("\nYour executor is not supported for recording and is \nonly meant for replaying strats.")
                     return
+                end
+
+                if has_hook then
+                    Globals.__tds_recorder_handler = function(remote, method, args, results)
+                        handle_namecall(remote, method, args, results)
+                    end
+
+                    if not Globals.__tds_recorder_hooked then
+                        Globals.__tds_recorder_hooked = true
+                        local original
+                        original = hookmetamethod(game, "__namecall", function(self, ...)
+                            local method = getnamecallmethod and getnamecallmethod() or nil
+                            if method == "InvokeServer" or method == "FireServer" then
+                                if typeof(self) == "Instance" and (self.ClassName == "RemoteFunction" or self.ClassName == "RemoteEvent" or self.ClassName == "UnreliableRemoteEvent") then
+                                    local args = {...}
+                                    local handler = Globals.__tds_recorder_handler
+                                    if handler then
+                                        task.spawn(pcall, handler, self, method, args, {true})
+                                    end
+                                end
+                            end
+                            return original(self, ...)
+                        end)
+                    end
                 end
 
                 Recorder:Log("Recorder started")
