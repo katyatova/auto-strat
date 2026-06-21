@@ -1064,11 +1064,11 @@ local function StartAutoReady()
     task.spawn(function()
         local VR = ReplicatedStorage:WaitForChild("StateReplicators"):WaitForChild("VoteReplicator")
         
-        repeat task.wait(0.5) until VR:GetAttribute("Enabled") == true and VR:GetAttribute("Title") == "Ready?"
+        repeat task.wait(0.1) until VR:GetAttribute("Enabled") == true and VR:GetAttribute("Title") == "Ready?"
         
         RunVoteSkip()
         
-        repeat task.wait(1) until VR:GetAttribute("Enabled") == false
+        repeat task.wait(0.1) until VR:GetAttribute("Enabled") == false
         
         AutoReadyRunning = false
     end)
@@ -3911,7 +3911,7 @@ local function StartAutoSkip()
                 RunVoteSkip()
             end
 
-            task.wait(1)
+            task.wait(0.1)
         end
 
         AutoSkipRunning = false
