@@ -1,30 +1,74 @@
 local Globals = getgenv()
 
+-- // Services
+
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
-
-if not game:IsLoaded() then game.Loaded:Wait() end
-
 local VirtualUser = game:GetService("VirtualUser")
 local RunService = game:GetService("RunService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PathfindingService = game:GetService("PathfindingService")
 local HttpService = game:GetService("HttpService")
+
+-- // Player
+
+local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local mouse = LocalPlayer:GetMouse()
+
+-- Platform
+
+local Platform = UserInputService:GetPlatform()
+local IsMobile = (Platform == Enum.Platform.IOS or Platform == Enum.Platform.Android)
+
+-- // Wait for game to load
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+-- loadstrings
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/DuxiiT/auto-strat/refs/heads/main/Sources/UI.lua"))()
+local RecorderInit = loadstring(game:HttpGet("https://raw.githubusercontent.com/DuxiiT/auto-strat/refs/heads/main/Sources/Recorder.lua"))()
+
+-- // Script UI
+
+local Window = Library:Window({
+    Title = "Aether Hub",
+    Desc = "your #1 hub",
+    Theme = "Default",
+    DiscordLink = "https://discord.gg/aetherhub",
+    Icon = 99432006374500,
+    Config = {
+        Keybind = Enum.KeyCode.LeftControl,
+        Size = UDim2.new(0, 500, 0, 400)
+    }
+})
+
+-- // Game Remotes
+
 local RemoteFunc = ReplicatedStorage:WaitForChild("RemoteFunction")
 local RemoteEvent = ReplicatedStorage:WaitForChild("RemoteEvent")
+
+-- // Game State
+
+local GameState = ReplicatedStorage:WaitForChild("StateReplicators"):WaitForChild("GameStateReplicator")
+
+local CurrentGameState = GameState:GetAttribute("GameStarted")
+GameState:GetAttributeChangedSignal("GameStarted"):Connect(function ()
+	CurrentGameState = GameState:GetAttribute("GameStarted")
+end)
+
+-- // Settings Config
+
 local FileName = "ADS_Config.json"
-local platform = UserInputService:GetPlatform()
-local IsMobile = (platform == Enum.Platform.IOS or platform == Enum.Platform.Android)
+
+-- // Functions
 
 local SmartTeleportToLobby = function()
     local lobbyId = 3260590327
-    
     pcall(function()
         if not IsMobile and Globals.PrivateCode and Globals.PrivateCode ~= "" then
             game:GetService("ExperienceService"):LaunchExperience({
@@ -35,7 +79,6 @@ local SmartTeleportToLobby = function()
             TeleportService:Teleport(lobbyId)
         end
     end)
-
     task.wait(10)
 
     Window:Notify({
@@ -44,7 +87,6 @@ local SmartTeleportToLobby = function()
         Time = 9999,
         Type = "error"
     })
-
     task.wait(5)
 
     Window:Notify({
@@ -59,7 +101,6 @@ local SmartTeleportToLobby = function()
         Type = "normal"
     })
 end
-
 
 local function Reconnect()
     local initial = GuiService:GetErrorMessage()
@@ -120,38 +161,18 @@ task.spawn(function()
     end)
 end)
 
-local function IdentifyGameState()
-    local players = game:GetService("Players")
-    local TempPlayer = players.LocalPlayer or players.PlayerAdded:Wait()
-    local TempGui = TempPlayer:WaitForChild("PlayerGui")
 
-    while true do
-        if TempGui:FindFirstChild("ReactLobbyHud") then
-            return "LOBBY"
-        elseif TempGui:FindFirstChild("ReactUniversalHotbar") then
-            return "GAME"
-        end
+task.spawn(function()
+    local LobbyTimer = 0
+    while not CurrentGameState do 
         task.wait(1)
-    end
-end
-
-local GameState = IdentifyGameState()
-
-local function StartAntiAfk()
-    task.spawn(function()
-        local LobbyTimer = 0
-        while GameState == "LOBBY" do 
-            task.wait(1)
-            LobbyTimer = LobbyTimer + 1
-            if LobbyTimer >= 600 then
-                SmartTeleportToLobby()
-                break 
-            end
-        end
-    end)
-end
-
-StartAntiAfk()
+        LobbyTimer = LobbyTimer + 1
+        if LobbyTimer >= 600 then
+            SmartTeleportToLobby()
+            break 
+    	end
+	end
+end)
 
 local SendRequest = request or http_request or httprequest
     or GetDevice and GetDevice().request
@@ -166,6 +187,7 @@ local AutoPickupsRunning = false
 local AutoSkipRunning = false
 local AutoClaimRewards = false
 local AntiLagRunning = false
+local AutoReadyRunning = false
 local AutoChainRunning = false
 local AutoDjRunning = false
 local AutoNecroRunning = false
@@ -349,7 +371,6 @@ local function Apply3dRendering()
     else
         RunService:Set3dRenderingEnabled(true)
     end
-    local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
     local gui = PlayerGui and PlayerGui:FindFirstChild("ADS_BlackScreen")
     if Globals.Disable3DRendering then
         if PlayerGui and not gui then
@@ -829,14 +850,14 @@ local function TotalLength(PathNodes)
     return TotalLength
 end
 
-local MercenarySlider
-local MilitarySlider
-local MaxLenght
+local MercenarySlider = 0
+local MilitarySlider = 0
+local MaxLength = 0
 
 local function CalcLength()
     local map = workspace:FindFirstChild("Map")
 
-    if GameState == "GAME" and map then
+    if CurrentGameState and map then
         local PathNodes = FindPath()
 
         if PathNodes and #PathNodes > 0 then
@@ -850,8 +871,8 @@ local function CalcLength()
                 MilitarySlider:SetMax(MaxPathDistance)
             end
 
-            if MaxLenght then
-                MaxLenght = MaxPathDistance
+            if MaxLength then
+                MaxLength = MaxPathDistance
             end
             return true
         end
@@ -948,7 +969,7 @@ end
 local IsCurrentlyLoading = false
 
 function TDS:Addons()
-    if GameState == "LOBBY" then return false end
+    if not CurrentGameState then return false end
     if PremiumLoaded then return true end
     
     if IsCurrentlyLoading then 
@@ -1069,7 +1090,7 @@ local function RunVoteSkip()
 end
 
 local function StartAutoReady()
-    if AutoReadyRunning or not Globals.AutoReady or GameState ~= "GAME" then return end
+    if AutoReadyRunning or not Globals.AutoReady or not CurrentGameState then return end
     AutoReadyRunning = true
 
     task.spawn(function()
@@ -1121,7 +1142,7 @@ local function StartEasyMode()
             end
         end
 
-        repeat task.wait(2) until not Globals.Easy or (GameState == "GAME" and not game:IsLoaded())
+        repeat task.wait(2) until not Globals.Easy or (CurrentGameState and not game:IsLoaded())
 
         EasyModeRunning = false
     end)
@@ -1161,19 +1182,9 @@ task.spawn(function()
 end)
 
 -- // ui
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/DuxiiT/auto-strat/refs/heads/main/Sources/UI.lua"))()
 
-local Window = Library:Window({
-    Title = "Aether Hub",
-    Desc = "your #1 hub",
-    Theme = "Default",
-    DiscordLink = "https://discord.gg/aetherhub",
-    Icon = 99432006374500,
-    Config = {
-        Keybind = Enum.KeyCode.LeftControl,
-        Size = UDim2.new(0, 500, 0, 400)
-    }
-})
+
+
 
 if not LocalPlayer:IsInGroup(4914494) then
     Window:Notify({
@@ -1358,10 +1369,9 @@ local Automation = Window:Tab({Title = "Automation", Icon = "bot"}) do
     })
 
     task.spawn(function()
-        while true do
+        while true and task.wait(3) do
             local success = CalcLength()
             if success then break end 
-            task.wait(3)
         end
     end)
 
@@ -2083,7 +2093,7 @@ local Configuration = Window:Tab({Title = "Configuration", Icon = "sliders-horiz
         Desc = "This will drop everyones FPS to like 5 (you will not be able to see this unless you have an alt)",
         Value = false,
         Callback = function(v)
-            StickerSpam = v
+            local StickerSpam = v
 
             if StickerSpam then
                 task.spawn(function()
@@ -2105,7 +2115,7 @@ local Configuration = Window:Tab({Title = "Configuration", Icon = "sliders-horiz
         Title = "Unlock Admin+ (Sandbox)",
         Desc = "Keep in mind that some features such as selecting maps, spawning in enemies and changing tower stats will not work!",
         Callback = function()
-            if GameState == "GAME" then
+            if CurrentGameState then
                 local args = {
                     game.Players.LocalPlayer.UserId,
                     true
@@ -2295,7 +2305,7 @@ end
 
 Window:Line()
 
-local RecorderInit = loadstring(game:HttpGet("https://raw.githubusercontent.com/DuxiiT/auto-strat/refs/heads/main/Sources/Recorder.lua"))()
+
 RecorderInit({
     Window = Window,
     ReplicatedStorage = ReplicatedStorage,
@@ -2495,7 +2505,7 @@ end)
 
 -- // currency tracking
 local StartCoins, CurrentTotalCoins, StartGems, CurrentTotalGems = 0, 0, 0, 0
-if GameState == "GAME" then
+if CurrentGameState then
     pcall(function()
         repeat task.wait(1) until LocalPlayer:FindFirstChild("Coins")
         StartCoins = LocalPlayer.Coins.Value
@@ -2927,7 +2937,7 @@ local function IsMapAvailable(name)
             end
         end
 
-        wait(1)
+        task.wait(1)
 
         local TotalPlayer = #Players:GetChildren()
         local isFull = VetoText == "Veto ("..TotalPlayer.."/"..TotalPlayer..")"
@@ -2946,7 +2956,7 @@ end
 
 -- // timescale logic
 local function SetGameTimescale(TargetVal)
-    if GameState ~= "GAME" then 
+    if not CurrentGameState then 
         return false 
     end
 
@@ -2990,7 +3000,7 @@ local function SetGameTimescale(TargetVal)
 end
 
 local function UnlockSpeedTickets()
-    if GameState ~= "GAME" then 
+    if not CurrentGameState then 
         return false 
     end
 
@@ -3007,7 +3017,7 @@ local function UnlockSpeedTickets()
 end
 
 ApplyTimeScaleOnce = function()
-    if not Globals.TimeScaleEnabled or GameState ~= "GAME" then
+    if not Globals.TimeScaleEnabled or not CurrentGameState then
         return
     end
 
@@ -3241,7 +3251,7 @@ function TDS:Mode(difficulty, code)
 
     self.PrivateCode = tostring(targetCode)
 
-    if GameState ~= "LOBBY" then 
+    if CurrentGameState then 
         return false 
     end
 
@@ -3346,7 +3356,7 @@ function TDS:Mode(difficulty, code)
 end
 
 function TDS:Loadout(...)
-    if GameState ~= "GAME" then
+    if not CurrentGameState then
         return
     end
 
@@ -3456,7 +3466,7 @@ function TDS:VoteSkip(StartWave, EndWave)
 end
 
 function TDS:GameInfo(name, list)
-    if GameState ~= "GAME" then return false end
+    if not CurrentGameState then return false end
 
     local VoteGui = PlayerGui:WaitForChild("ReactGameIntermission", 30)
     if not (VoteGui and VoteGui.Enabled and VoteGui:WaitForChild("Frame", 5)) then return end
@@ -3494,7 +3504,7 @@ function TDS:StartGame()
 end
 
 function TDS:Ready()
-    if GameState ~= "GAME" then
+    if not CurrentGameState then
         return false 
     end
     MatchReadyUp()
@@ -3505,7 +3515,7 @@ function TDS:GetWave()
 end
 
 function TDS:WaitForWave(targetWave)
-    if GameState ~= "GAME" then return false end
+    if not CurrentGameState then return false end
     while self:GetWave() < targetWave do
         task.wait(0.5)
     end
@@ -3520,7 +3530,7 @@ function TDS:Place(TName, px, py, pz, ...)
     local args = {...}
     local isStacking = args[#args] == "stack" or args[#args] == true
 
-    if isStacking and not PremiumLoaded and GameState == "GAME" then
+    if isStacking and not PremiumLoaded and CurrentGameState then
         Window:Notify({
             Title = "ADS",
             Desc = "Stacking requires Premium. Automatically loading key system...",
@@ -3535,7 +3545,7 @@ function TDS:Place(TName, px, py, pz, ...)
         return false
     end
 
-    if GameState ~= "GAME" then
+    if not CurrentGameState then
         return false 
     end
 
@@ -3713,7 +3723,7 @@ local function StartAutoGatling()
     AutoGatlingRunning = true
     task.spawn(function()
         while Globals.AutoGatling do
-            if GameState == "GAME" then
+            if CurrentGameState then
                 if not GatlingExecuted then
                     GatlingExecuted = true 
                     task.spawn(function()
@@ -3736,7 +3746,7 @@ local function StartAutoPremium()
     AutoPremiumRunning = true
 
     task.spawn(function()
-        if GameState == "GAME" then
+        if CurrentGameState then
             Window:Notify({
                 Title = "ADS",
                 Desc = "Loading Key System...",
@@ -3892,7 +3902,7 @@ local function StartAutoSkip()
 end
 
 local function StartClaimRewards()
-    if AutoClaimRewards or not Globals.ClaimRewards or GameState ~= "LOBBY" then 
+    if AutoClaimRewards or not Globals.ClaimRewards or CurrentGameState then 
         return 
     end
 
@@ -3975,6 +3985,7 @@ local function StartAntiLag()
             task.wait(0.5)
         end
         AntiLagRunning = false
+		settings.QualityLevel = OriginalQuality
     end)
 end
 
@@ -4028,7 +4039,8 @@ local function StartAutoChain()
                     idx += 1
 
                     local hotbar = PlayerGui:FindFirstChild("ReactUniversalHotbar")
-                    local TimescaleFrame = hotbar and hotbar.Frame:FindFirstChild("timescale")
+					local frame = hotbar and hotbar:FindFirstChild("Frame")
+                    local TimescaleFrame = frame and frame:FindFirstChild("timescale")
 
                     if TimescaleFrame and TimescaleFrame.Visible then
                         if TimescaleFrame:FindFirstChild("Lock") then
@@ -4058,6 +4070,7 @@ local function StartAutoDjBooth()
     task.spawn(function()
         while Globals.AutoDJ do
             local TowersFolder = workspace:FindFirstChild("Towers")
+			local DJ
 
             if TowersFolder then
                 for _, towers in ipairs(TowersFolder:GetDescendants()) do
@@ -4214,8 +4227,6 @@ local function StartAutoNecro()
 end
 
 local function StartAutoMercenary()
-    if not Globals.AutoMercenary and not Globals.AutoMilitary then return end
-
     if AutoMercenaryBaseRunning then return end
     AutoMercenaryBaseRunning = true
 
@@ -4308,7 +4319,7 @@ local function StartSellFarm()
     if SellFarmsRunning or not Globals.SellFarms then return end
     SellFarmsRunning = true
 
-    if GameState ~= "GAME" then 
+    if not CurrentGameState then 
         return false 
     end
 

@@ -8,8 +8,13 @@ return function(ctx)
 	local Window = ctx.Window
     local replicated_storage = ctx.ReplicatedStorage or game:GetService("ReplicatedStorage")
     local http_service = ctx.HttpService or game:GetService("HttpService")
-    local game_state = ctx.GameState or "UNKNOWN"
+    local GameState = ctx.GameState
     local workspace_ref = ctx.workspace or workspace
+
+	local CurrentGameState = GameState:GetAttribute("GameStarted")
+	GameState:GetAttributeChangedSignal("GameStarted"):Connect(function ()
+		CurrentGameState = GameState:GetAttribute("GameStarted")
+	end)
 
     local players_service = game:GetService("Players")
     local local_player = ctx.LocalPlayer or players_service.LocalPlayer or players_service.PlayerAdded:Wait()
@@ -65,7 +70,7 @@ return function(ctx)
     end
 
     local function sync_existing_towers()
-        if game_state ~= "GAME" then
+        if not CurrentGameState then
             return
         end
 
@@ -553,7 +558,7 @@ return function(ctx)
             return
         end
 
-        if a1 == "Inventory" and a2 == "Equip" and a3 == "tower" then
+        if a1 == "Inventory" and a2 == "Equip" and a3 == "Tower" then
             if type(args[4]) == "string" then
                 local tower_name = args[4]
                 local cmd = string.format("TDS:Equip(%s)", string.format("%q", tower_name))
@@ -563,7 +568,7 @@ return function(ctx)
             return
         end
 
-        if a1 == "Inventory" and a2 == "Unequip" and a3 == "tower" then
+        if a1 == "Inventory" and a2 == "Unequip" and a3 == "Tower" then
             if type(args[4]) == "string" then
                 local tower_name = args[4]
                 local cmd = string.format("TDS:Unequip(%s)", string.format("%q", tower_name))
@@ -673,9 +678,7 @@ return function(ctx)
                 if not has_hook then
                     Recorder:Log("\nYour executor is not supported for recording and is \nonly meant for replaying strats.")
                     return
-                end
-
-                if has_hook then
+                else
                     Globals.__tds_recorder_handler = function(remote, method, args, results)
                         handle_namecall(remote, method, args, results)
                     end
@@ -828,7 +831,7 @@ TDS:Mode("%s")%s
             end
         })
 
-        if game_state == "GAME" then
+        if CurrentGameState then
             local towers_folder = workspace_ref:WaitForChild("Towers", 5)
 
             towers_folder.ChildAdded:Connect(function(tower)
